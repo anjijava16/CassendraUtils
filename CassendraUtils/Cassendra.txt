@@ -1,0 +1,399 @@
+Cassandra installation:
+=========================
+1. Download the cassandra tar ball from this link "http://apache.mirrors.pair.com/cassandra/2.1.5/apache-cassandra-2.1.5-bin.tar.gz"
+
+2. copy the tar ball to "work" folder and then extract it.
+
+3. update the "~/.bashrc" file with below content.
+export CASSANDRA_HOME=/home/inst/work/apache-cassandra-2.1.5-bin
+export PATH=$CASSANDRA_HOME/bin:$PATH
+
+4. Re-open the new terminal
+
+5. start cassndra server using "cassandra" command
+
+6. start cassandra cli using "cassandra-cli" command
+
+7. start cassandra cql using "cqlsh" command
+
+8. stop cassandra using "pkill -f CassandraDaemon" command
+
+
+CQL:
+============
+CREATE KEYSPACE iwscql WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};
+
+CREATE KEYSPACE iwscql WITH replication = {'class': 'NetworkTopologyStrategy'} AND durable_writes = false;
+
+DESC KEYSPACES ;
+
+USE iwscql;
+
+DROP KEYSPACE IF EXISTS iwscql ;
+
+
+CREATE TABLE student (
+	id int PRIMARY KEY,
+	name text,
+	year int
+) WITH comment='Student information';
+
+DESC TABLE student ;
+
+
+
+INSERT INTO student ( id, name, year ) VALUES ( 1, 'venkat', 2011);
+INSERT INTO student ( id, name, year ) VALUES ( 2, 'raj', 2011);
+INSERT INTO student ( id, name, year ) VALUES ( 3, 'sunil', 2012);
+INSERT INTO student ( id, name, year ) VALUES ( 4, 'rajesh', 2012);
+
+
+SELECT * FROM student ;
+
+SELECT * FROM student WHERE id = 2;
+
+SELECT * FROM student WHERE year = 2012;
+
+
+CREATE INDEX student_year_index ON student (year);
+
+SELECT * FROM student WHERE year = 2012;
+
+DROP INDEX student_year_index;
+
+
+ALTER TABLE student ADD subjects list<text>;
+
+UPDATE student SET subjects = ['math'] WHERE id = 1;
+
+UPDATE student SET subjects = ['phy'] WHERE id = 1;
+
+UPDATE student SET subjects = subjects + ['chem'] WHERE id = 1;
+
+UPDATE student SET subjects = subjects + ['math'] WHERE id = 1;
+
+UPDATE student SET subjects = subjects - ['math'] WHERE id = 1;
+
+DELETE subjects FROM student WHERE id = 1;
+
+ALTER TABLE student DROP subjects;
+
+
+
+
+ALTER TABLE student ADD marks map<text,int>;
+
+UPDATE student SET marks = {'math': 100} WHERE id = 1;
+
+UPDATE student SET marks = {'phy': 100} WHERE id = 1;
+
+UPDATE student SET marks = marks + {'chem': 90} WHERE id = 1;
+
+UPDATE student SET marks = marks + {'math': 80, 'eng': 50} WHERE id = 1;
+
+DELETE marks['eng'] FROM student WHERE id = 1;
+
+DELETE marks FROM student WHERE id = 1;
+
+ALTER TABLE student DROP marks;
+
+
+
+ALTER TABLE student ADD subjects list<text>;
+ALTER TABLE student ADD marks map<text,int>;
+
+
+UPDATE student SET subjects = ['math'], marks = {'math': 100} WHERE id = 1;
+UPDATE student SET subjects = subjects + ['chem'], marks = marks + {'chem': 90} WHERE id = 1;
+
+
+ALTER TABLE student RENAME id TO student_id;
+
+select * from student;
+
+
+
+INSERT INTO student ( id, name, year ) VALUES ( 111, 'venkat', 2011) USING TTL 20;
+
+alter table student with default_time_to_live=10;
+
+TRUNCATE student;
+
+DROP TABLE student;
+
+
+
+create table users(user_id text,followers set<text>, tweet_date timestamp, tweet_body text, first_name text, PRIMARY KEY(user_id,tweet_date, first_name));
+
+
+insert into users(user_id,tweet_date,tweet_body,first_name) values('kvenkat','2013-12-31','good bye 2013','venkat');
+insert into users(user_id,tweet_date,tweet_body,first_name) values('kvenkat','2014-01-01','welcome 2014','venkat');
+insert into users(user_id,tweet_date,tweet_body,first_name) values('kvenkat','2014-01-04','Working on Cassandra book on weekend','venkat');
+
+insert into users(user_id,tweet_date,tweet_body,first_name) values('jhassell','2013-12-21','2013 bye bye','jonathan');
+insert into users(user_id,tweet_date,tweet_body,first_name) values('jhassell','2014-01-01','2014! another exciting year','jonathan');
+insert into users(user_id,tweet_date,tweet_body,first_name) values('jhassell','2014-03-25','Cassandra book, rolling out!','jonathan');
+
+select * from users;
+
+select * from users where user_id='kvenkat' order by tweet_date DESC;
+
+select * from users where tweet_date>='2013-12-31' allow filtering;
+
+
+
+create table users1(user_id text,followers set<text>, tweet_date timestamp, tweet_body text, first_name text, PRIMARY KEY(user_id,tweet_date, first_name)) with clustering order by (tweet_date DESC);
+
+
+insert into users1(user_id,tweet_date,tweet_body,first_name) values('kvenkat','2013-12-31','good bye 2013','venkat');
+insert into users1(user_id,tweet_date,tweet_body,first_name) values('kvenkat','2014-01-01','welcome 2014','venkat');
+insert into users1(user_id,tweet_date,tweet_body,first_name) values('kvenkat','2014-01-04','Working on Cassandra book on weekend','venkat');
+
+insert into users1(user_id,tweet_date,tweet_body,first_name) values('jhassell','2013-12-21','2013 bye bye','jonathan');
+insert into users1(user_id,tweet_date,tweet_body,first_name) values('jhassell','2014-01-01','2014! another exciting year','jonathan');
+insert into users1(user_id,tweet_date,tweet_body,first_name) values('jhassell','2014-03-25','Cassandra book, rolling out!','jonathan');
+
+
+
+****************************************************
+
+drop table student1;
+create table student1(uid text, id int PRIMARY KEY, name text, year int);
+
+insert into student1(uid,id,name,year) values('kalyan',1,'aa',2001);
+insert into student1(uid,id,name,year) values('kalyan',2,'aa',2002);
+insert into student1(uid,id,name,year) values('kalyan',3,'aa',2003);
+insert into student1(uid,id,name,year) values('kalyan',4,'aa',2004);
+insert into student1(uid,id,name,year) values('kalyan',5,'aa',2001);
+
+Allowed Statements:
+----------------------------------
+select * from student1;
+
+select * from student1 where id = 1;
+
+select * from student1 where token(id) > token(1);
+
+
+Not Allowed Statements:
+----------------------------------
+select * from student1 where token(id) > token(1) and year = 2002;
+
+select * from student1 where id = 1 and year = 2002;
+
+
+Solution for above is Index on year:-
+
+CREATE INDEX student1 ON student1 (year);
+
+
+****************************************************
+
+drop table student2;
+create table student2(uid text, id int, name text, year int, PRIMARY KEY(uid, id)) with clustering order by (id ASC);
+
+insert into student2(uid,id,name,year) values('kalyan',1,'aa',2001);
+insert into student2(uid,id,name,year) values('kalyan',2,'aa',2002);
+insert into student2(uid,id,name,year) values('kalyan',3,'aa',2003);
+insert into student2(uid,id,name,year) values('kalyan',4,'aa',2004);
+insert into student2(uid,id,name,year) values('kalyan',5,'aa',2001);
+
+Allowed Statements:
+----------------------------------
+select * from student2;
+
+select * from student2 where id = 1 ALLOW FILTERING;
+
+select * from student2 where id > 1 ALLOW FILTERING;
+
+select * from student2 limit 2;
+
+select * from student2 where uid = 'kalyan' order by id;
+
+select * from student2 where uid = 'kalyan' order by id desc limit 1;
+
+
+Not Allowed Statements:
+----------------------------------
+
+select * from student2 order by id;
+
+select * from student2 where id = 1;
+
+select * from student2 where token(id) > token(1);
+
+select * from student2 where id = 1 and year = 2001;
+
+
+Solution for above is Index on year:-
+
+CREATE INDEX student2 ON student2 (year);
+
+select * from student2 where id = 1 and year = 2001 ALLOW FILTERING;
+
+select * from student2 where id = 1 and year = 2001 and name = 'aa' ALLOW FILTERING;
+
+****************************************************
+
+
+CLI:
+============
+
+create keyspace iwscli with strategy_options={replication_factor:1} and placement_strategy='org.apache.cassandra.locator.SimpleStrategy';
+
+show keyspaces;
+
+describe keyspace iwscli;
+
+drop keyspace iwscli;
+
+use iwscli;
+
+create column family student with key_validation_class='UTF8Type' and comparator='UTF8Type' and default_validation_class='UTF8Type';
+
+set student['venkat']['id']=1;
+set student['venkat']['year']=2011;
+set student['raj']['id']=2;
+set student['raj']['year']=2011;
+set student['rajesh']['id']=3;
+set student['rajesh']['year']=2012;
+set student['sunil']['id']=4;
+set student['sunil']['year']=2012;
+
+list student;
+
+del student['sunil']['year'];
+del student['sunil'];
+
+
+
+
+
+
+create column family users with key_validation_class='UTF8Type' and comparator='UTF8Type' and default_validation_class='UTF8Type';
+
+set users['user1']['userName']='venkat';
+set users['user1']['email']='v@a.com';
+
+update column family users with comparator = UTF8Type and
+   column_metadata = [{column_name: userName, validation_class:UTF8Type},
+                      {column_name: email, validation_class:UTF8Type},
+                      {column_name: age, validation_class: LongType, index_type: KEYS}];
+
+
+set users['user1']['age']=30;
+
+set users['user2']['userName']='raj';
+set users['user2']['email']='r@a.com';
+set users['user2']['age']=40;
+
+set users['user3']['userName']='ramesh';
+set users['user3']['email']='ra@a.com';
+set users['user3']['age']=35;
+
+set users['user4']['userName']='anil';
+set users['user4']['email']='a@a.com';
+set users['user4']['age']=30;
+
+list users;
+
+list users limit 2;
+
+list users limit 2 columns 2;
+
+list users limit 2 columns 2 reversed;
+
+
+del users['user4']['age'];
+del users['user4'];
+
+
+
+
+
+
+
+
+create column family users1 with key_validation_class='UTF8Type' and comparator='UTF8Type' and 
+   default_validation_class='UTF8Type' and comparator = UTF8Type and
+   column_metadata = [{column_name: userName, validation_class:UTF8Type},
+                      {column_name: email, validation_class:UTF8Type}];
+
+
+ 
+
+
+drop column family users;
+
+=============================================================================================================================================================================
+#############################################################################################################################################################################
+
+DESCRIBE keyspaces;
+
+CREATE KEYSPACE tutorialspoint
+WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 3};
+
+CREATE KEYSPACE test WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1' : 3 }
+AND DURABLE_WRITES = false;
+
+
+
+Strategy name	Description
+Simple Strategy'	Specifies a simple replication factor for the cluster.
+Network Topology Strategy	Using this option, you can set the replication factor for each data-center independently.
+Old Network Topology Strategy	This is a legacy replication strategy.
+
+
+
+
+
+
+ SELECT * FROM system.schema_keyspaces;
+
+You can use a created KeySpace using the keyword USE. Its syntax is as follows:
+Syntax:USE <identifier>
+
+
+
+Durable_writes
+By default, the durable_writes properties of a table is set to true, however it can be set to false. You cannot set this property to simplex strategy.
+
+Example
+Given below is the example demonstrating the usage of durable writes property.
+
+cqlsh> CREATE KEYSPACE test
+ WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1' : 3 }
+ AND DURABLE_WRITES = false;
+
+================================================================
+
+Verification
+You can verify whether the durable_writes property of test KeySpace was set to false by querying the System Keyspace. This query gives you all the KeySpaces along with their properties.
+
+cqlsh> SELECT * FROM system.schema_keyspaces;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
