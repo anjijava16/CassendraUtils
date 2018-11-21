@@ -1,3 +1,13 @@
+
+i)desc keyspaces (show databases)
+ii)use keyspace
+ex: use mydb
+iii)desc tables
+iv) desc table TABLENAME
+
+
+
+
 Cassandra installation:
 =========================
 1. Download the cassandra tar ball from this link "http://apache.mirrors.pair.com/cassandra/2.1.5/apache-cassandra-2.1.5-bin.tar.gz"
